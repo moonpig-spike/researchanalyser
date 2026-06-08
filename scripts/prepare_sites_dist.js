@@ -1,10 +1,12 @@
 const fs = require('fs')
 const path = require('path')
+const { execFileSync } = require('child_process')
 
 const root = process.cwd()
 const distDir = path.join(root, 'dist')
 const serverDir = path.join(distDir, 'server')
 const clientDir = path.join(distDir, 'client')
+const bundleDir = path.join(root, '.open-next', 'sites-bundle')
 const openNextWorker = path.join(root, '.open-next', 'worker.js')
 const openNextAssets = path.join(root, '.open-next', 'assets')
 const hostingConfig = path.join(root, '.openai', 'hosting.json')
@@ -54,5 +56,30 @@ fs.rmSync(
 if (fs.existsSync(openNextAssets)) {
   fs.cpSync(openNextAssets, clientDir, { recursive: true })
 }
+
+fs.rmSync(bundleDir, { recursive: true, force: true })
+execFileSync(
+  'npx',
+  [
+    'wrangler',
+    'deploy',
+    path.join(serverDir, 'index.js'),
+    `--assets=${clientDir}`,
+    '--compatibility-date=2026-06-08',
+    '--compatibility-flag=nodejs_compat',
+    '--dry-run',
+    `--outdir=${bundleDir}`,
+  ],
+  { stdio: 'inherit' }
+)
+
+const bundledWorker = path.join(bundleDir, 'index.js')
+if (!fs.existsSync(bundledWorker)) {
+  throw new Error('Wrangler did not produce a bundled Worker index.js.')
+}
+
+fs.rmSync(serverDir, { recursive: true, force: true })
+fs.mkdirSync(serverDir, { recursive: true })
+fs.copyFileSync(bundledWorker, path.join(serverDir, 'index.js'))
 
 console.log('Prepared Sites artifact in dist/')
