@@ -1,4 +1,8 @@
 /** @type {import('next').NextConfig} */
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+initOpenNextCloudflareForDev();
+
 // Cache bust: 2025-04-02T12:00:00Z
 const nextConfig = {
   typescript: {

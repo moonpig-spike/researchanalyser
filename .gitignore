@@ -17,6 +17,9 @@ supabase/.temp/
 # Common ignores
 node_modules
 .next/
+.open-next/
+.wrangler/
+dist/
 .DS_Store
 .vercel
 .playwright-cli/
