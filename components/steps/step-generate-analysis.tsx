@@ -76,7 +76,8 @@ export function StepGenerateAnalysis({
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}))
-        throw new Error(error.error || 'Failed to start analysis')
+        const message = [error.error, error.details].filter(Boolean).join(': ')
+        throw new Error(message || 'Failed to start analysis')
       }
 
       await fetchAnalysis()

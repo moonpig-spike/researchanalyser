@@ -387,6 +387,10 @@ function buildAnalysisTargets(testScript, studyType) {
 
   if (studyType === 'balanced-comparison') {
     const targets = [];
+    const fallbackQuestions =
+      balancedQuestions.length === 0 && otherQuestions.length === 0
+        ? extractQuestions(testScript)
+        : [];
 
     balancedQuestions.forEach((question, index) => {
       targets.push({
@@ -412,10 +416,20 @@ function buildAnalysisTargets(testScript, studyType) {
       });
     });
 
+    fallbackQuestions.forEach((question, index) => {
+      targets.push({
+        questionNumber: `Q${index + 1}`,
+        questionText: question,
+        feedbackGroup: 'none',
+      });
+    });
+
     return targets;
   }
 
-  return otherQuestions.map((question, index) => ({
+  const fallbackQuestions = otherQuestions.length > 0 ? otherQuestions : extractQuestions(testScript);
+
+  return fallbackQuestions.map((question, index) => ({
     questionNumber: `Q${index + 1}`,
     questionText: question,
     feedbackGroup: 'none',
