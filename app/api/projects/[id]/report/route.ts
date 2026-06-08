@@ -258,7 +258,7 @@ async function generateAiReport(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'gpt-5.4',
+      model: 'gpt-5.5',
       reasoning: { effort: 'high' },
       input: [
         {
@@ -329,7 +329,7 @@ Use the supplied evidence. Do not invent participant counts, conditions, or refe
     },
     metadata: {
       mode: 'ai',
-      model: 'gpt-5.4',
+      model: 'gpt-5.5',
     },
   }
 }

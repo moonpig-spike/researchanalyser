@@ -487,7 +487,7 @@ async function callOpenAiStructured({
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-5.4',
+          model: 'gpt-5.5',
           reasoning: { effort: reasoningEffort },
           text: {
             format: {
@@ -686,7 +686,7 @@ async function generateAiCrossReferenceAnalysis({ apiKey, project, transcripts, 
   for (let batchIndex = 0; batchIndex < targetBatches.length; batchIndex += 1) {
     if (typeof postProgress === 'function') {
       await postProgress(
-        `Generating per-question, per-user analysis with GPT-5.4 (${batchIndex + 1} of ${targetBatches.length})`
+        `Generating per-question, per-user analysis with GPT-5.5 (${batchIndex + 1} of ${targetBatches.length})`
       );
     }
     const parsed = await generateAiCrossReferenceAnalysisBatch({
@@ -940,7 +940,7 @@ async function prepareResearchContext({ apiKey, project, postProgress }) {
     return rawContext;
   }
 
-  await postProgress('Preparing condensed research context for GPT-5.4');
+  await postProgress('Preparing condensed research context for GPT-5.5');
 
   const digest = await callOpenAiStructured({
     apiKey,
@@ -1543,7 +1543,7 @@ async function main() {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error(
-        'Analysis requires GPT-5.4 via OPENAI_API_KEY. No fallback analysis is allowed because the model-backed reasoning path is required for accuracy.'
+        'Analysis requires GPT-5.5 via OPENAI_API_KEY. No fallback analysis is allowed because the model-backed reasoning path is required for accuracy.'
       );
     }
 
@@ -1575,7 +1575,7 @@ async function main() {
     let findings = [];
 
     await sleep(300);
-    await postProgress('Preparing script and transcript evidence for GPT-5.4');
+    await postProgress('Preparing script and transcript evidence for GPT-5.5');
 
     const studyContext = await prepareResearchContext({
       apiKey,
@@ -1591,7 +1591,7 @@ async function main() {
       postProgress,
     });
 
-    await postProgress('Starting per-question, per-user analysis with GPT-5.4');
+    await postProgress('Starting per-question, per-user analysis with GPT-5.5');
 
     const crossReferenceResult = await generateAiCrossReferenceAnalysis({
       apiKey,

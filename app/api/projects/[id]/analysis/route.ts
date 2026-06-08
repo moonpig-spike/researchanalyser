@@ -38,7 +38,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            'Analysis requires GPT-5.4 via OPENAI_API_KEY. It cannot be completed right now because the OpenAI API key is not configured for this environment.',
+            'Analysis requires GPT-5.5 via OPENAI_API_KEY. It cannot be completed right now because the OpenAI API key is not configured for this environment.',
         },
         { status: 400 }
       )
@@ -116,7 +116,7 @@ export async function POST(
       .insert({
         project_id: projectId,
         status: 'queued',
-        model_version: 'gpt-5.4',
+        model_version: 'gpt-5.5',
         prompt_version: 'ux-researcher-designer-v5',
         current_step: 'Queued',
         progress_log: ['Queued analysis run'],

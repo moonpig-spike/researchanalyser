@@ -2,7 +2,7 @@
 
 This document defines the intended AI analysis architecture for the research workflow.
 
-It exists because the current local analysis flow is a lightweight heuristic synthesizer, while the target product should use GPT-5.4 to perform deeper multi-document research synthesis.
+It exists because the current local analysis flow is a lightweight heuristic synthesizer, while the target product should use GPT-5.5 to perform deeper multi-document research synthesis.
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The goal is to generate:
 
 ## Core Requirement
 
-The system must analyze the uploaded research script and all collected transcripts together, using GPT-5.4, rather than relying only on local deterministic logic.
+The system must analyze the uploaded research script and all collected transcripts together, using GPT-5.5, rather than relying only on local deterministic logic.
 
 This should feel closer to the manual Codex research workflow:
 - read source material
@@ -88,7 +88,7 @@ The report should not simply restate script questions. It should synthesize patt
 ### Question-Level Analysis
 
 Recommended model:
-- `gpt-5.4`
+- `gpt-5.5`
 
 Recommended reasoning:
 - `medium` by default
@@ -101,7 +101,7 @@ Use this for:
 ### Final Report
 
 Recommended model:
-- `gpt-5.4`
+- `gpt-5.5`
 
 Recommended reasoning:
 - `high`
@@ -187,7 +187,7 @@ Those may come later, but they are not required for the core AI analysis archite
 ## Current Gap
 
 As of this document:
-- the report regeneration path can use GPT-5.4 when `OPENAI_API_KEY` is configured
+- the report regeneration path can use GPT-5.5 when `OPENAI_API_KEY` is configured
 - the main analysis step is still powered by a local heuristic synthesizer
 
 That means the product is not yet fully aligned with this specification.
@@ -195,7 +195,7 @@ That means the product is not yet fully aligned with this specification.
 ## Definition of Done
 
 This specification should be considered implemented when:
-- the analysis step uses GPT-5.4 rather than only local heuristics
+- the analysis step uses GPT-5.5 rather than only local heuristics
 - the app generates real per-question, per-user analysis from all transcripts and the script
 - the final report is generated from:
   - the script

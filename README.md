@@ -2,7 +2,7 @@
 
 A Next.js research workflow tool for turning UserTesting studies into transcript-grounded UX research analysis and reports.
 
-The app helps researchers create a project, add a research script, import or paste transcripts, generate per-question analysis with GPT-5.4, and turn that evidence into a final report.
+The app helps researchers create a project, add a research script, import or paste transcripts, generate per-question analysis with GPT-5.5, and turn that evidence into a final report.
 
 ## What It Does
 

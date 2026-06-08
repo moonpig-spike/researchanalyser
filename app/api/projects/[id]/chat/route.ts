@@ -108,7 +108,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            'Project chat requires GPT-5.4 via OPENAI_API_KEY. Chat cannot be completed because the OpenAI API key is not configured for this environment.',
+            'Project chat requires GPT-5.5 via OPENAI_API_KEY. Chat cannot be completed because the OpenAI API key is not configured for this environment.',
         },
         { status: 400 }
       )
@@ -185,7 +185,7 @@ export async function POST(
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-5.4',
+        model: 'gpt-5.5',
         reasoning: { effort: 'medium' },
         text: {
           format: {
