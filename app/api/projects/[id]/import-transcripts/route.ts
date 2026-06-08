@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
+const HOSTED_CAPTURE_UNAVAILABLE =
+  'Hosted Sites cannot launch the local Playwright/UserTesting capture helper. Use manual transcript entry in the hosted app, or run the local helper from this repo: npm run import-usertesting -- --project-id <project-id> --app-url https://researchanalyser.moonpig.chatgpt-team.site'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,8 +50,19 @@ export async function POST(
       .from('import_runs')
       .insert({
         project_id: projectId,
-        status: 'queued',
+        status: process.env.NODE_ENV === 'production' ? 'failed' : 'queued',
         sessions_url: project.usertesting_url,
+        current_step:
+          process.env.NODE_ENV === 'production'
+            ? 'Hosted capture helper unavailable'
+            : null,
+        progress_log:
+          process.env.NODE_ENV === 'production'
+            ? ['Hosted capture helper unavailable']
+            : [],
+        error_message:
+          process.env.NODE_ENV === 'production' ? HOSTED_CAPTURE_UNAVAILABLE : null,
+        completed_at: process.env.NODE_ENV === 'production' ? new Date().toISOString() : null,
       })
       .select()
       .single()
@@ -99,6 +113,15 @@ export async function POST(
       })
 
       child.unref()
+    } else {
+      return NextResponse.json(
+        {
+          error: HOSTED_CAPTURE_UNAVAILABLE,
+          importRunId: importRun.id,
+          status: 'failed',
+        },
+        { status: 501 }
+      )
     }
 
     // Return success immediately - local dev auto-spawns the bridge script and
@@ -208,8 +231,25 @@ export async function GET(
       .select('id', { count: 'exact', head: true })
       .eq('project_id', projectId)
 
+    const importRun =
+      process.env.NODE_ENV === 'production' &&
+      latestRun &&
+      (latestRun.status === 'queued' || latestRun.status === 'running') &&
+      !latestRun.error_message
+        ? {
+            ...latestRun,
+            status: 'failed',
+            current_step: 'Hosted capture helper unavailable',
+            progress_log: [
+              ...((latestRun.progress_log as string[] | null) || []),
+              'Hosted capture helper unavailable',
+            ],
+            error_message: HOSTED_CAPTURE_UNAVAILABLE,
+          }
+        : latestRun || null
+
     return NextResponse.json({
-      importRun: latestRun || null,
+      importRun,
       discoveredSessions: sessionCount || 0,
       importedTranscripts: transcriptCount || 0,
     })

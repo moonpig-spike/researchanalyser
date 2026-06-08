@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
+const HOSTED_ANALYSIS_UNAVAILABLE =
+  'Hosted Sites cannot run the long-running GPT analysis worker yet. The OpenAI key is configured, but analysis must currently be run from the local helper: node scripts/run_local_analysis.js --project-id <project-id> --analysis-run-id <analysis-run-id> --app-url https://researchanalyser.moonpig.chatgpt-team.site'
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -14,6 +17,20 @@ export async function GET(
 
     if (!analysis) {
       return Response.json(null)
+    }
+
+    if (
+      process.env.NODE_ENV === 'production' &&
+      (analysis.status === 'queued' || analysis.status === 'running') &&
+      !analysis.errorMessage
+    ) {
+      return Response.json({
+        ...analysis,
+        status: 'failed',
+        currentStep: 'Hosted analysis worker unavailable',
+        errorMessage: HOSTED_ANALYSIS_UNAVAILABLE,
+        progressLog: [...(analysis.progressLog || []), 'Hosted analysis worker unavailable'],
+      })
     }
 
     return Response.json(analysis)
@@ -115,11 +132,20 @@ export async function POST(
       .from('analysis_runs')
       .insert({
         project_id: projectId,
-        status: 'queued',
+        status: process.env.NODE_ENV === 'production' ? 'failed' : 'queued',
         model_version: 'gpt-5.5',
         prompt_version: 'ux-researcher-designer-v5',
-        current_step: 'Queued',
-        progress_log: ['Queued analysis run'],
+        current_step:
+          process.env.NODE_ENV === 'production'
+            ? 'Hosted analysis worker unavailable'
+            : 'Queued',
+        progress_log:
+          process.env.NODE_ENV === 'production'
+            ? ['Hosted analysis worker unavailable']
+            : ['Queued analysis run'],
+        error_message:
+          process.env.NODE_ENV === 'production' ? HOSTED_ANALYSIS_UNAVAILABLE : null,
+        completed_at: process.env.NODE_ENV === 'production' ? new Date().toISOString() : null,
       })
       .select()
       .single()
@@ -167,6 +193,15 @@ export async function POST(
       })
 
       child.unref()
+    } else {
+      return NextResponse.json(
+        {
+          error: HOSTED_ANALYSIS_UNAVAILABLE,
+          analysisRunId: analysisRun.id,
+          status: 'failed',
+        },
+        { status: 501 }
+      )
     }
 
     return NextResponse.json(

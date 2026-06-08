@@ -92,9 +92,21 @@ npm run inspect-project
 Local analysis and inspection helpers:
 
 ```bash
-node scripts/run_local_analysis.js --project-id <uuid> --analysis-run-id <uuid>
+node scripts/run_local_analysis.js --project-id <uuid> --analysis-run-id <uuid> --app-url http://localhost:3000
 node scripts/inspect_project_state.js --project-id <uuid>
 ```
+
+For the hosted Sites deployment, Supabase-backed browsing and manual transcript
+entry work in the web app, but the long-running helper tasks still run from a
+local machine:
+
+```bash
+npm run import-usertesting -- --project-id <uuid> --app-url https://researchanalyser.moonpig.chatgpt-team.site
+node scripts/run_local_analysis.js --project-id <uuid> --analysis-run-id <uuid> --app-url https://researchanalyser.moonpig.chatgpt-team.site
+```
+
+The hosted app will fail fast with those instructions instead of leaving import
+or analysis runs permanently queued.
 
 ## Repository Notes
 
