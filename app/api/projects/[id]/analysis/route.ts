@@ -1,11 +1,7 @@
 import { getProjectAnalysis } from '@/lib/queries'
+import { runHostedAnalysis } from '@/lib/analysis-runner'
 import { createClient } from '@/lib/supabase-client'
 import { NextRequest, NextResponse } from 'next/server'
-import path from 'node:path'
-import { spawn } from 'node:child_process'
-
-const HOSTED_ANALYSIS_UNAVAILABLE =
-  'Hosted Sites cannot run the long-running GPT analysis worker yet. The OpenAI key is configured, but analysis must currently be run from the local helper: node scripts/run_local_analysis.js --project-id <project-id> --analysis-run-id <analysis-run-id> --app-url https://researchanalyser.moonpig.chatgpt-team.site'
 
 export async function GET(
   request: Request,
@@ -17,20 +13,6 @@ export async function GET(
 
     if (!analysis) {
       return Response.json(null)
-    }
-
-    if (
-      process.env.NODE_ENV === 'production' &&
-      (analysis.status === 'queued' || analysis.status === 'running') &&
-      !analysis.errorMessage
-    ) {
-      return Response.json({
-        ...analysis,
-        status: 'failed',
-        currentStep: 'Hosted analysis worker unavailable',
-        errorMessage: HOSTED_ANALYSIS_UNAVAILABLE,
-        progressLog: [...(analysis.progressLog || []), 'Hosted analysis worker unavailable'],
-      })
     }
 
     return Response.json(analysis)
@@ -132,20 +114,13 @@ export async function POST(
       .from('analysis_runs')
       .insert({
         project_id: projectId,
-        status: process.env.NODE_ENV === 'production' ? 'failed' : 'queued',
+        status: 'queued',
         model_version: 'gpt-5.5',
         prompt_version: 'ux-researcher-designer-v5',
-        current_step:
-          process.env.NODE_ENV === 'production'
-            ? 'Hosted analysis worker unavailable'
-            : 'Queued',
-        progress_log:
-          process.env.NODE_ENV === 'production'
-            ? ['Hosted analysis worker unavailable']
-            : ['Queued analysis run'],
-        error_message:
-          process.env.NODE_ENV === 'production' ? HOSTED_ANALYSIS_UNAVAILABLE : null,
-        completed_at: process.env.NODE_ENV === 'production' ? new Date().toISOString() : null,
+        current_step: 'Queued',
+        progress_log: ['Queued analysis run'],
+        error_message: null,
+        completed_at: null,
       })
       .select()
       .single()
@@ -158,6 +133,7 @@ export async function POST(
     }
 
     if (process.env.NODE_ENV !== 'production') {
+      const { spawn } = await import('node:child_process')
       const host = request.headers.get('host') || 'localhost:3000'
       const proto =
         host.includes('localhost') || host.startsWith('127.0.0.1')
@@ -194,13 +170,22 @@ export async function POST(
 
       child.unref()
     } else {
+      const result = await runHostedAnalysis({
+        supabase,
+        projectId,
+        analysisRunId: analysisRun.id,
+        apiKey: process.env.OPENAI_API_KEY,
+      })
+
       return NextResponse.json(
         {
-          error: HOSTED_ANALYSIS_UNAVAILABLE,
+          success: true,
           analysisRunId: analysisRun.id,
-          status: 'failed',
+          status: 'complete',
+          questions: result.questions,
+          findings: result.findings,
         },
-        { status: 501 }
+        { status: 201 }
       )
     }
 

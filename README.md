@@ -96,17 +96,13 @@ node scripts/run_local_analysis.js --project-id <uuid> --analysis-run-id <uuid> 
 node scripts/inspect_project_state.js --project-id <uuid>
 ```
 
-For the hosted Sites deployment, Supabase-backed browsing and manual transcript
-entry work in the web app, but the long-running helper tasks still run from a
-local machine:
+For the hosted Sites deployment, Supabase-backed browsing, manual transcript
+entry, and GPT-5.5 analysis run in the web app. UserTesting transcript capture
+still runs from a local authenticated browser session:
 
 ```bash
 npm run import-usertesting -- --project-id <uuid> --app-url https://researchanalyser.moonpig.chatgpt-team.site
-node scripts/run_local_analysis.js --project-id <uuid> --analysis-run-id <uuid> --app-url https://researchanalyser.moonpig.chatgpt-team.site
 ```
-
-The hosted app will fail fast with those instructions instead of leaving import
-or analysis runs permanently queued.
 
 ## Repository Notes
 
