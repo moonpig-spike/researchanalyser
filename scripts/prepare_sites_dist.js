@@ -34,6 +34,22 @@ for (const entry of ['.build', 'cloudflare', 'middleware', 'server-functions']) 
 fs.rmSync(path.join(serverDir, 'cloudflare', 'cache-assets-manifest.sql'), {
   force: true,
 })
+fs.rmSync(path.join(serverDir, 'server-functions', 'default', '.next', 'BUILD_ID'), {
+  force: true,
+})
+fs.rmSync(
+  path.join(
+    serverDir,
+    'server-functions',
+    'default',
+    'node_modules',
+    'next',
+    'dist',
+    'lib',
+    'server-external-packages.jsonc'
+  ),
+  { force: true }
+)
 
 if (fs.existsSync(openNextAssets)) {
   fs.cpSync(openNextAssets, clientDir, { recursive: true })
