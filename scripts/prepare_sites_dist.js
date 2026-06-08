@@ -24,6 +24,13 @@ fs.mkdirSync(path.join(distDir, '.openai'), { recursive: true })
 fs.copyFileSync(openNextWorker, path.join(serverDir, 'index.js'))
 fs.copyFileSync(hostingConfig, path.join(distDir, '.openai', 'hosting.json'))
 
+for (const entry of ['.build', 'cache', 'cloudflare', 'middleware', 'server-functions']) {
+  const source = path.join(root, '.open-next', entry)
+  if (fs.existsSync(source)) {
+    fs.cpSync(source, path.join(serverDir, entry), { recursive: true })
+  }
+}
+
 if (fs.existsSync(openNextAssets)) {
   fs.cpSync(openNextAssets, clientDir, { recursive: true })
 }
