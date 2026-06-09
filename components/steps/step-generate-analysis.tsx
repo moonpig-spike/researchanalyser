@@ -69,10 +69,26 @@ export function StepGenerateAnalysis({
     setLoading(true)
     setRunError(null)
 
+    let progressTimer: ReturnType<typeof setInterval> | undefined
+
     try {
-      const response = await fetch(`/api/projects/${projectId}/analysis`, {
+      const responsePromise = fetch(`/api/projects/${projectId}/analysis`, {
         method: 'POST',
       })
+
+      progressTimer = setInterval(() => {
+        fetchAnalysis().catch((error) => {
+          console.error('Failed to refresh analysis status:', error)
+        })
+      }, 3000)
+
+      setTimeout(() => {
+        fetchAnalysis().catch((error) => {
+          console.error('Failed to fetch analysis after start:', error)
+        })
+      }, 800)
+
+      const response = await responsePromise
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}))
@@ -83,7 +99,9 @@ export function StepGenerateAnalysis({
       await fetchAnalysis()
     } catch (error) {
       setRunError(error instanceof Error ? error.message : 'Failed to start analysis')
+      await fetchAnalysis()
     } finally {
+      if (progressTimer) clearInterval(progressTimer)
       setLoading(false)
     }
   }
@@ -91,13 +109,13 @@ export function StepGenerateAnalysis({
   const isRunning = analysis?.status === 'queued' || analysis?.status === 'running'
   const isModerated = studyType === 'moderated-test'
   const progress = useMemo(() => {
-    if (!analysis) return 0
+    if (!analysis) return loading ? 5 : 0
     if (analysis.status === 'queued') return 10
     if (analysis.status === 'complete') return 100
     if (analysis.status === 'failed') return 0
     const completedSteps = analysis.progressLog?.length || 0
     return Math.min(90, 15 + completedSteps * 10)
-  }, [analysis])
+  }, [analysis, loading])
 
   const outputs = [
     {
@@ -223,7 +241,7 @@ export function StepGenerateAnalysis({
 
         {runError && <p className="text-sm text-destructive mb-4">{runError}</p>}
 
-        {(analysis || progress > 0) && (
+        {(analysis || loading || progress > 0) && (
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -233,10 +251,17 @@ export function StepGenerateAnalysis({
               <Progress value={progress} className="h-2" />
             </div>
 
-            {analysis?.currentStep && (
+            {(analysis?.currentStep || loading) && (
               <div className="rounded-lg border border-border bg-muted/20 p-3">
-                <p className="text-sm font-medium text-foreground">{analysis.currentStep}</p>
-                {analysis.errorMessage && (
+                <p className="text-sm font-medium text-foreground">
+                  {analysis?.currentStep || 'Creating analysis run'}
+                </p>
+                {loading && !analysis?.currentStep && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    The hosted analysis is starting. Progress updates will appear here as each step is saved.
+                  </p>
+                )}
+                {analysis?.errorMessage && (
                   <p className="text-xs text-destructive mt-1">{analysis.errorMessage}</p>
                 )}
               </div>
