@@ -315,7 +315,7 @@ export function StepGenerateAnalysis({
           <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
           <div>
             <p>
-              <strong className="text-foreground">Model:</strong> {analysis?.modelVersion || 'Local research synthesizer'}
+              <strong className="text-foreground">Model:</strong> {analysis?.modelVersion || 'gpt-5.5'}
             </p>
             <p className="mt-1">
               <strong className="text-foreground">Prompt Version:</strong> {analysis?.promptVersion || 'ux-researcher-designer-v1'}

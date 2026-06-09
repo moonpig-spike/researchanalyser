@@ -116,7 +116,7 @@ export function ProjectAnalysis() {
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-4 w-4" />
-          <span>{analysis.modelVersion || 'GPT-4'}</span>
+          <span>{analysis.modelVersion || 'gpt-5.5'}</span>
           <span className="text-border">|</span>
           <span>Prompt {analysis.promptVersion || 'v1.0'}</span>
         </div>
